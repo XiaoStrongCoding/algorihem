@@ -17,6 +17,30 @@
     })
     return maxAns
 };
+//*********************贪心算法 start**************************************/
+
+/**
+ * 121. 买卖股票的最佳时机 (一次交易)https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/?favorite=2cktkvj
+ * 给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。
+    你只能选择 某一天 买入这只股票，并选择在 未来的某一个不同的日子 卖出该股票。设计一个算法来计算你所能获取的最大利润。
+    返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 0 。
+ */
+
+/**
+ * @param {number[]} prices
+ * @return {number}
+ */
+ var maxProfit = function(prices) {
+    const n = prices.length
+    if(n<=1) return 0
+    let sell = 0
+    let buy = -prices[0]
+    for(let i=1; i<n; i++) {
+        sell = Math.max(sell, buy+prices[i])
+        buy = Math.max(-prices[i], buy)
+    }
+    return sell
+}
 
 /**
  * 55. 跳跃游戏 https://leetcode.cn/problems/jump-game/description/
@@ -38,6 +62,59 @@ var canJump = function(nums) {
     }
     return false
 };
+
+/**
+ * 45. 跳跃游戏 II https://leetcode.cn/problems/jump-game-ii/description/
+ * 给定一个长度为 n 的 0 索引整数数组 nums。初始位置为 nums[0]。返回到达 nums[n - 1] 的最小跳跃次数
+ */
+
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+ var jump = function(nums) {
+    let curIndex = 0, nextIndex = 0, step = 0
+    for(let i=0; i<nums.length-1; i++) {
+        nextIndex = Math.max(nums[i]+i, nextIndex)
+        if(i=== curIndex) {
+            curIndex = nextIndex
+            step++
+        }
+    }
+    return step
+};
+
+/**
+ * 763. 划分字母区间 https://leetcode.cn/problems/partition-labels/description/
+ * 给你一个字符串 s 。我们要把这个字符串划分为尽可能多的片段，同一字母最多出现在一个片段中。
+    注意，划分结果需要满足：将所有划分结果按顺序连接，得到的字符串仍然是 s 。
+    返回一个表示每个字符串片段的长度的列表。
+ */
+/**
+ * @param {string} s
+ * @return {number[]}
+ */
+ var partitionLabels = function(s) {
+    const last = new Array(26)
+    const codePointA = 'a'.codePointAt()
+    const n = s.length
+    for(let i=0; i<n; i++) {
+        last[s[i].codePointAt()-codePointA] = i
+    }
+
+    let start = 0, end=0
+    const result=[]
+    for(let i=0; i<n; i++) {
+        end = Math.max(last[s[i].codePointAt()-codePointA], end)
+        if(end === i) {
+            result.push(end-start+1)
+            start = end+1
+        }
+    }
+    return result
+};
+
+//*********************贪心算法 end**************************************/
 
 /**
  * 62. 不同路径 https://leetcode.cn/problems/unique-paths/description/
@@ -114,44 +191,6 @@ var climbStairs = function(n) {
     return dp[n]
 };
 
-/**
- * 72. 编辑距离 https://leetcode.cn/problems/edit-distance/description/
- * 给你两个单词 word1 和 word2， 请返回将 word1 转换成 word2 所使用的最少操作数  。
-    你可以对一个单词进行如下三种操作：
-        插入一个字符
-        删除一个字符
-        替换一个字符
- */
-
-/**
- * @param {string} word1
- * @param {string} word2
- * @return {number}
- */
- var minDistance = function(word1, word2) {
-    const n1 = word1.length, n2 = word2.length
-    const dp = Array.from(new Array(n1+1), ()=>new Array(n2+1).fill(0))
-
-    for(let i=1; i<=n1; i++) {
-        dp[i][0] = i
-    }
-
-    for(let i=1; i<=n2; i++) {
-        dp[0][i] = i
-    }
-
-    for(let i=1; i<=n1; i++) {
-        for(let j=1; j<=n2; j++) {
-            if(word1[i-1]===word2[j-1]) {
-                dp[i][j] = dp[i-1][j-1]
-            } else {
-                dp[i][j] = Math.min(dp[i-1][j-1], dp[i][j-1], dp[i-1][j]) + 1
-            }
-        }
-    }
-
-    return dp[n1][n2]
-};
 
 /**
  * 85. 最大矩形 https://leetcode.cn/problems/maximal-rectangle/description/
@@ -218,29 +257,6 @@ var numTrees = function(n) {
     }
     return dp[n]
 };
-
-/**
- * 121. 买卖股票的最佳时机 (一次交易)https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/?favorite=2cktkvj
- * 给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。
-    你只能选择 某一天 买入这只股票，并选择在 未来的某一个不同的日子 卖出该股票。设计一个算法来计算你所能获取的最大利润。
-    返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 0 。
- */
-
-/**
- * @param {number[]} prices
- * @return {number}
- */
-var maxProfit = function(prices) {
-    const n = prices.length
-    if(n<=1) return 0
-    let sell = 0
-    let buy = -prices[0]
-    for(let i=1; i<n; i++) {
-        sell = Math.max(sell, buy+prices[i])
-        buy = Math.max(-prices[i], buy)
-    }
-    return sell
-}
 
 /**
  * 139. 单词拆分 https://leetcode.cn/problems/word-break/description/?favorite=2cktkvj
@@ -320,47 +336,6 @@ var maxProfit = function(prices) {
     return Math.max(dp[nums.length][0], dp[nums.length][1])
 };
 
-/**
- * 200. 岛屿数量 https://leetcode.cn/problems/number-of-islands/description/?favorite=2cktkvj
- * 给你一个由 '1'（陆地）和 '0'（水）组成的的二维网格，请你计算网格中岛屿的数量。
-    岛屿总是被水包围，并且每座岛屿只能由水平方向和/或竖直方向上相邻的陆地连接形成。
-    此外，你可以假设该网格的四条边均被水包围。
- */
-
-/**
- * @param {character[][]} grid
- * @return {number}
- */
- var numIslands = function(grid) {
-    let count = 0
-    for(let i=0; i<grid.length; i++) {
-        for(let j=0; j<grid[0].length; j++) {
-            if(grid[i][j] === '1') {
-                count++
-                grid[i][j] = '0'
-                turnZero([[i,j]], grid)
-            }
-        }
-    }
-
-    return count
-};
-
-function turnZero(queue, grid) {
-    let dirs = [[1,0], [0,1], [-1,0], [0,-1]]
-    while(queue.length) {
-        const [i,j] = queue.shift()
-        for(const dir of dirs) {
-            const x = i + dir[0]
-            const y = j + dir[1]
-
-            if(x<0 || y<0 || x>=grid.length || y>=grid[0].length || grid[x][y] === '0') continue
-
-            grid[x][y] = '0'
-            queue.push([x,y])
-        }
-    }
-}
 
 /**
  * 221. 最大正方形 https://leetcode.cn/problems/maximal-square/description/?favorite=2cktkvj
@@ -564,4 +539,126 @@ function turnZero(queue, grid) {
     }
 
     return dp[target] == target
+};
+
+/**
+ * 647. 回文子串 https://leetcode.cn/problems/palindromic-substrings/?favorite=2cktkvj
+ * 给你一个字符串 s ，请你统计并返回这个字符串中 回文子串 的数目。
+    回文字符串 是正着读和倒过来读一样的字符串。
+    子字符串 是字符串中的由连续字符组成的一个序列。
+    具有不同开始位置或结束位置的子串，即使是由相同的字符组成，也会被视作不同的子串。
+ */
+
+/**
+ * @param {string} s
+ * @return {number}
+ */
+ var countSubstrings = function(s) {
+
+    const n = s.length
+    const dp = Array.from(new Array(n), () => new Array(n).fill(false))
+
+    let count = 0
+    for(let i=0; i<n; i++) {
+        for(let j=0; j<=i; j++) {
+            if(s[j] === s[i]) {
+                if(i-j<=1 || dp[j+1][i-1]) {
+                    dp[j][i] = true
+                    count++
+                }
+            }
+        }
+    }
+
+    return count
+};
+
+/**
+ * 118. 杨辉三角 https://leetcode.cn/problems/pascals-triangle/description/
+ * 给定一个非负整数 numRows，生成「杨辉三角」的前 numRows 行。
+  在「杨辉三角」中，每个数是它左上方和右上方的数的和。
+ */
+
+/**
+ * @param {number} numRows
+ * @return {number[][]}
+ */
+ var generate = function(numRows) {
+    const result = []
+    for(let i=0; i<numRows; i++) {
+        const temp = new Array(i+1).fill(1)
+        for(let j=1; j<temp.length-1; j++) {
+            temp[j] = result[i-1][j-1] + result[i-1][j]
+        }
+        result.push(temp)
+    }
+    return result
+};
+
+/**
+ * 1143. 最长公共子序列 https://leetcode.cn/problems/longest-common-subsequence/description/
+ * 给定两个字符串 text1 和 text2，返回这两个字符串的最长 公共子序列 的长度。如果不存在 公共子序列 ，返回 0 。
+ * 输入：text1 = "abcde", text2 = "ace" 
+  输出：3 
+ */
+
+/**
+ * @param {string} text1
+ * @param {string} text2
+ * @return {number}
+ */
+ var longestCommonSubsequence = function(text1, text2) {
+    const m = text1.length, n = text2.length
+    const dp = Array.from(new Array(m+1), () => new Array(n+1).fill(0)) // dp[i][j]代表text1前i和text2前j的公共子序列
+    for(let i=1; i<=m; i++) {
+        const t1 = text1[i-1]
+        for(let j=1; j<=n; j++) {
+            const t2 = text2[j-1]
+            if(t1===t2) {
+                dp[i][j] = dp[i-1][j-1] + 1
+            }else{
+                dp[i][j] = Math.max(dp[i][j-1], dp[i-1][j])
+            }
+        }
+    }
+    return dp[m][n]
+};
+
+/**
+ * 72. 编辑距离 https://leetcode.cn/problems/edit-distance/description/
+ * 给你两个单词 word1 和 word2， 请返回将 word1 转换成 word2 所使用的最少操作数  。
+    你可以对一个单词进行如下三种操作：
+        插入一个字符
+        删除一个字符
+        替换一个字符
+ */
+
+/**
+ * @param {string} word1
+ * @param {string} word2
+ * @return {number}
+ */
+ var minDistance = function(word1, word2) {
+    const n1 = word1.length, n2 = word2.length
+    const dp = Array.from(new Array(n1+1), ()=>new Array(n2+1).fill(0))
+
+    for(let i=1; i<=n1; i++) {
+        dp[i][0] = i
+    }
+
+    for(let i=1; i<=n2; i++) {
+        dp[0][i] = i
+    }
+
+    for(let i=1; i<=n1; i++) {
+        for(let j=1; j<=n2; j++) {
+            if(word1[i-1]===word2[j-1]) {
+                dp[i][j] = dp[i-1][j-1]
+            } else {
+                dp[i][j] = Math.min(dp[i-1][j-1], dp[i][j-1], dp[i-1][j]) + 1
+            }
+        }
+    }
+
+    return dp[n1][n2]
 };

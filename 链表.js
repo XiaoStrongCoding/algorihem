@@ -387,6 +387,19 @@ LRUCache.prototype.put = function(key, value) {
     return null
 };
 
+// 方法二
+var getIntersectionNode = function(headA, headB) {
+    if(!headA || !headB) return null
+
+    let h1 = headA, h2 = headB
+    while(h1!==h2) {
+        h1 = !h1 ? headB : h1.next
+        h2 = !h2 ? headA : h2.next
+    }
+
+    return h1
+};
+
 /**
  * 206. 反转链表 https://leetcode.cn/problems/reverse-linked-list/description/
  * 给你单链表的头节点 head ，请你反转链表，并返回反转后的链表。
@@ -427,6 +440,61 @@ var reverseList = function(head) {
 };
 
 /**
+ * 链表内指定区间反转 https://www.nowcoder.com/practice/b58434e200a648c589ca2063f1faf58c?tpId=295&tqId=654&ru=/exam/oj&qru=/ta/format-top101/question-ranking&sourceUrl=%2Fexam%2Foj
+ * 将一个节点数为 size 链表 m 位置到 n 位置之间的区间反转，要求时间复杂度 O(n)，空间复杂度 O(1)。
+例如：
+给出的链表为 
+1→2→3→4→5→NULL, 
+m=2,n=4,
+返回 
+1→4→3→2→5→NULL.
+ */
+
+// 题解：1. 先找出要反转区域的钩子，A -> B -> C -> D, 当B,C为反转区域时钩子为A,D;       2. m是否等于1分情况;       3. 反转链表;
+function reverseBetween( head ,  m ,  n ) {
+    // write code here
+    if(m===n || !head || !head.next) return head
+
+    let cur = head
+    let start = null
+    let end = null
+    for(let i=1; i<=n; i++) {
+        if(i==m-1) {
+            start = cur
+        }
+        cur = cur.next
+    }
+    end = cur
+
+    let pre = null
+    let temp = null
+
+    if(m>1) {
+        cur = start.next
+        while(cur !== end) {
+            temp = cur.next
+            cur.next = pre
+            pre = cur
+            cur = temp
+        }
+        start.next.next = cur
+        start.next = pre
+    } else {
+        cur = head
+        while(cur !== end) {
+            temp = cur.next
+            cur.next = pre
+            pre = cur
+            cur = temp
+        }
+        head.next = cur
+        head = pre
+    }
+
+    return head
+}
+
+/**
  * 234. 回文链表 https://leetcode.cn/problems/palindrome-linked-list/description/
  * 给你一个单链表的头节点 head ，请你判断该链表是否为回文链表。如果是，返回 true ；否则，返回 false 。
  */
@@ -452,3 +520,181 @@ var reverseList = function(head) {
 
     return true
 };
+
+const reverseList = (head) => {
+    let prev = null;
+    let curr = head;
+    while (curr !== null) {
+        let nextTemp = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = nextTemp;
+    }
+    return prev;
+}
+
+const endOfFirstHalf = (head) => {
+    let fast = head;
+    let slow = head;
+    while (fast.next !== null && fast.next.next !== null) {
+        fast = fast.next.next;
+        slow = slow.next;
+    }
+    return slow;
+}
+
+var isPalindrome = function(head) {
+    if (head == null) return true;
+
+    // 找到前半部分链表的尾节点并反转后半部分链表
+    const firstHalfEnd = endOfFirstHalf(head);
+    const secondHalfStart = reverseList(firstHalfEnd.next);
+
+    // 判断是否回文
+    let p1 = head;
+    let p2 = secondHalfStart;
+    let result = true;
+    while (result && p2 != null) {
+        if (p1.val != p2.val) result = false;
+        p1 = p1.next;
+        p2 = p2.next;
+    }        
+
+    // 还原链表并返回结果
+    firstHalfEnd.next = reverseList(secondHalfStart);
+    return result;
+};
+
+/**
+ * 138. 随机链表的复制 https://leetcode.cn/problems/copy-list-with-random-pointer/description/
+ * 给你一个长度为 n 的链表，每个节点包含一个额外增加的随机指针 random ，该指针可以指向链表中的任何节点或空节点。
+ */
+
+/**
+ * @param {Node} head
+ * @return {Node}
+ */
+ var copyRandomList = function(head, nodeCache=new WeakMap()) {
+    if(!head) return null
+    if(!nodeCache.has(head)) {
+        nodeCache.set(head, {val: head.val})
+        Object.assign(nodeCache.get(head), {next: copyRandomList(head.next, nodeCache), random: copyRandomList(head.random, nodeCache)})
+    }
+    return nodeCache.get(head)
+};
+
+/**
+ * 24.两两交换链表中的节点 https://leetcode.cn/problems/swap-nodes-in-pairs/description/
+ * 给你一个链表，两两交换其中相邻的节点，并返回交换后链表的头节点。你必须在不修改节点内部的值的情况下完成本题（即，只能进行节点交换）。
+ */
+
+/**
+ * @param {ListNode} head
+ * @return {ListNode}
+ */
+ var swapPairs = function(head) {
+    if(!head || !head.next) return head
+
+    const newHead = head.next
+    head.next = swapPairs(newHead.next)
+    newHead.next = head
+    return newHead
+};
+
+/**
+ * 23. 合并 K 个升序链表 https://leetcode.cn/problems/merge-k-sorted-lists/description/
+ * 给你一个链表数组，每个链表都已经按升序排列。
+   请你将所有链表合并到一个升序链表中，返回合并后的链表。
+ */
+
+/**
+ * @param {ListNode[]} lists
+ * @return {ListNode}
+ */
+var mergeKLists = function(lists) {
+    return lists.reduce((res, list)=>{
+        while(list) {
+            res.push(list)
+            list = list.next
+        }
+        return res
+    },[]).sort((a,b) => a.val - b.val).reduceRight((p, node)=>(node.next=p, p = node, p), null)
+};
+
+// 两两合并
+var mergeTwoLists = function (list1, list2) {
+    let dummy = new ListNode(); // 用哨兵节点简化代码逻辑
+    let cur = dummy; // cur 指向新链表的末尾
+    while (list1 && list2) {
+        if (list1.val < list2.val) {
+            cur.next = list1; // 把 list1 加到新链表中
+            list1 = list1.next;
+        } else { // 注：相等的情况加哪个节点都是可以的
+            cur.next = list2; // 把 list2 加到新链表中
+            list2 = list2.next;
+        }
+        cur = cur.next;
+    }
+    cur.next = list1 ? list1 : list2; // 拼接剩余链表
+    return dummy.next;
+};
+
+var mergeKLists = function (lists) {
+    // 合并从 lists[i] 到 lists[j-1] 的链表
+    function dfs(i, j) {
+        const m = j - i;
+        if (m === 0) return null; // 注意输入的 lists 可能是空的
+        if (m === 1) return lists[i]; // 无需合并，直接返回
+        const left = dfs(i, i + (m >> 1)); // 合并左半部分
+        const right = dfs(i + (m >> 1), j); // 合并右半部分
+        return mergeTwoLists(left, right); // 最后把左半和右半合并
+    }
+    return dfs(0, lists.length);
+};
+
+/**
+ * 25. K 个一组翻转链表 https://leetcode.cn/problems/reverse-nodes-in-k-group/description/?envType=study-plan-v2&envId=top-100-liked
+ * 给你链表的头节点 head ，每 k 个节点一组进行翻转，请你返回修改后的链表。
+ * 输入：head = [1,2,3,4,5], k = 2
+   输出：[2,1,4,3,5]
+ */
+
+/**
+ * @param {ListNode} head
+ * @param {number} k
+ * @return {ListNode}
+ */
+ var reverseKGroup = function(head, k) {
+    const hair = new ListNode(0)
+    hair.next = head
+    let pre = hair
+
+    while(head) {
+        let tail = pre
+        for(let i=0; i<k; i++) {
+            tail = tail.next
+            if(!tail) {
+                return hair.next
+            }
+        }
+        const nex = tail.next;
+        [head, tail] = myReverse(head, tail); // head是交换后的队尾，tail是交换后队头
+        pre.next = head
+        tail.next = nex
+        pre = tail
+        head = tail.next
+    }
+    return hair.next
+};
+
+function myReverse(head, tail){
+    let prev = tail.next
+    let p = head
+    while(prev!==tail) {
+        let temp = p.next
+        p.next = prev
+        prev = p
+        p = temp
+    }
+    return [tail, head]
+}

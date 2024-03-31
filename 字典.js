@@ -21,7 +21,7 @@ Trie.prototype.insert = function(word) {
         if(!node[str]) {
             node[str] = {}
         }
-        node = node[str]
+        node = node[str] // 树形结构
     }
     node.isEnd = true
 };

@@ -9,32 +9,30 @@
  */
 
 /**
- * 基本二分法
- * @param {*} target: Array<number>
- * @param {*} nums: number
- * @returns 
+ * 35. 搜索插入位置 https://leetcode.cn/problems/search-insert-position/description/
+ * 给定一个排序数组和一个目标值，在数组中找到目标值，并返回其索引。如果目标值不存在于数组中，返回它将会被按顺序插入的位置。
  */
- function searchNum (target, nums) {
-    if (!nums.length) return -1
-    let left = 0
-    let right = nums.length - 1
-    let mid
-    while (left <= right) {
-        // >> 1 位运算代替 除2 取整 操作
-        // 为什么不写成 mid = (left+right)/2 ,因为考虑到left+right的溢出边界情况
-        mid = left + ((right - left) >> 1)
-        if (nums[mid] === target) {
+/**
+ * @param {number[]} nums
+ * @param {number} target
+ * @return {number}
+ */
+ var searchInsert = function(nums, target) {
+    const n = nums.length
+    let l=0, r = n-1
+    while(l<=r) {
+        const mid = l + Math.floor((r-l)/2)
+        if(nums[mid]===target) {
             return mid
-        }
-        if (nums[mid] < target) {
-            left = mid + 1
-        }
-        if (nums[mid] > target) {
-            right = mid - 1
+        } else if(nums[mid]>target) {
+            r = mid-1
+        } else {
+            l = mid + 1
         }
     }
-    return -1
-}
+    return l
+};
+
 
 /**
  * 34. 在排序数组中查找元素的第一个和最后一个位置 https://leetcode.cn/problems/find-first-and-last-position-of-element-in-sorted-array/description/?favorite=2cktkvj
@@ -238,4 +236,25 @@
     } else {
         return (Math.max(maxLeft1, maxLeft2)+Math.min(minRight1, minRight2))/2
     }
+};
+
+/**
+ * 153. 寻找旋转排序数组中的最小值 https://leetcode.cn/problems/find-minimum-in-rotated-sorted-array/description/
+ */
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+ var findMin = function(nums) {
+    const n = nums.length
+    let l = 0, r=n-1
+    while(l<r) {
+        const mid = l + Math.floor((r-l)/2)
+        if(nums[mid]<nums[r]) {
+            r = mid
+        } else {
+            l = mid + 1
+        }
+    }
+    return nums[l]
 };

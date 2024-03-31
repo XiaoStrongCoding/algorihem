@@ -182,86 +182,6 @@
     return res
 };
 
-/**************************************盛水问题 start***************************************************/
-
-/**
- * 11. 盛最多水的容器 https://leetcode.cn/problems/container-with-most-water/description/
- */
-
-/**
- * @param {number[]} height
- * @return {number}
- */
- var maxArea = function(height) {
-    let ans = 0
-    for(let l=0, r=height.length-1; l<r;) {
-        const minHeight = height[l]>height[r] ? height[r--] : height[l++];
-        const area =  minHeight * (r-l+1)
-        ans = Math.max(ans, area)
-    }
-    return ans
-};
-
-/**
- * 42. 接雨水 https://leetcode.cn/problems/trapping-rain-water/description/
- * 给定 n 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
- */
-
-/**
- * @param {number[]} height
- * @return {number}
- */
- var trap = function(height) {
-    if(height.length < 3) return 0
-    let leftMax = 0, rightMax = 0
-    let left = 0, right = height.length - 1
-    let sum = 0
-
-    while(left <= right) {
-        leftMax = Math.max(leftMax, height[left])
-        rightMax = Math.max(rightMax, height[right])
-
-        if(leftMax <= rightMax) {
-            sum += (leftMax-height[left])
-            left++
-        } else {
-            sum += (rightMax-height[right])
-            right--
-        }
-    }
-
-    return sum
-};
-
-/**
- * 84. 柱状图中最大的矩形 https://leetcode.cn/problems/largest-rectangle-in-histogram/description/?favorite=2cktkvj
- * 给定 n 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。
-   求在该柱状图中，能够勾勒出来的矩形的最大面积。
- */
-
-/**
- * @param {number[]} heights
- * @return {number}
- */
- var largestRectangleArea = function(heights) {
-    let area = 0
-    const stack = [0]
-    heights = [0, ...heights, 0]
-    for(let i=1; i<heights.length; i++) {
-        while(heights[i] < heights[stack[stack.length-1]]) {
-            const lastTopIndex = stack.pop()
-            area = Math.max(area,
-                heights[lastTopIndex] * (i - stack[stack.length-1] - 1)
-            )
-        }
-        stack.push(i)
-    }
-
-    return area
-};
-
-/**************************************盛水问题 end***************************************************/
-
 /**
  * 17. 电话号码的字母组合 https://leetcode.cn/problems/letter-combinations-of-a-phone-number/description/?favorite=2cktkvj
  * 给定一个仅包含数字 2-9 的字符串，返回所有它能表示的字母组合
@@ -336,7 +256,7 @@
     const result = []
 
     for(const str of s) {
-        if(Object.keys(map).includes(str)) {
+        if(map[str]) {
             if(result.pop() !== map[str]) return false
         } else {
             result.push(str)
@@ -439,10 +359,8 @@
             if(candidates[j] > target - sum) continue
 
             path.push(candidates[j])
-            sum+=candidates[j]
-            dfs(j, sum)
+            dfs(j, sum+candidates[j])
             path.pop()
-            sum-=candidates[j]
         }
     }
 
@@ -491,17 +409,103 @@
  * @return {number[][]}
  */
 var subsets = function(nums) {
-    const res = []
-    function dfs(i, cur) {
+    const res = [], cur = []
+    function dfs(i, ) {
         res.push(cur.slice())
         for(let j=i; j<nums.length; j++) {
             cur.push(nums[j])
-            dfs(j+1, cur)
+            dfs(j+1)
             cur.pop()
         }
     }
     dfs(0,[])
     return res
+};
+
+/**
+ * 131. 分割回文串
+ * 给你一个字符串 s，请你将 s 分割成一些子串，使每个子串都是 回文串。返回 s 所有可能的分割方案。
+ * 输入：s = "aab"
+   输出：[["a","a","b"],["aa","b"]]
+ */
+
+/**
+ * @param {string} s
+ * @return {string[][]}
+ */
+ var partition = function(s) {
+    let n = s.length
+    const ans = [], path=[]
+    function dfs(i, start) {
+        if(i===n) {
+            ans.push(path.slice())
+            return
+        }
+        if(i<n-1) {
+            dfs(i+1, start)
+        }
+
+        if(isPalindrom(s, start, i)) {
+            path.push(s.substring(start, i+1))
+            dfs(i+1, i+1)
+            path.pop()
+        }
+
+    }
+    dfs(0,0)
+    return ans
+};
+
+function isPalindrom(s, l, r) {
+    while(l<r) {
+        if(s[l++]!==s[r--]) return false
+    }
+    return true
+}
+
+/**
+ * N皇后 https://leetcode.cn/problems/eight-queens-lcci/description/?orderBy=most_votes&languageTags=javascript
+ * 设计一种算法，打印 N 皇后在 N × N 棋盘上的各种摆法，其中每个皇后都不同行、不同列，也不在对角线上。这里的“对角线”指的是所有的对角线，不只是平分整个棋盘的那两条对角线。
+ */
+
+/**
+ * @param {number} n
+ * @return {string[][]}
+ */
+ var solveNQueens = function(n) {
+    const dp = Array.from(new Array(n), () => new Array(n).fill('.'));
+    const ans = []
+    function isVaild(row, col) {
+        for(let i=0; i<row; i++) {
+            for(let j=0; j<n; j++) {
+                if(dp[i][j] === 'Q' && (j==col || i+j === row+col || i-j === row-col)) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    function dfs(row) {
+        if(row === n) {
+            const stringArr = dp.slice()
+            for(let i=0; i<n; i++) {
+                stringArr[i] = stringArr[i].join('')
+            }
+            ans.push(stringArr)
+            return
+        } else {
+            for(let col=0; col<n; col++) {
+                if(isVaild(row,col)) {
+                    dp[row][col] = 'Q'
+                    dfs(row+1)
+                    dp[row][col] = '.'
+                }
+            }
+        }
+    }
+    dfs(0)
+    return ans
 };
 
 /*************************************************排列/组合 end*************************/
@@ -632,6 +636,33 @@ function dfs(board,word,x,y,index) {
 
 /*******************哈希表 start******************************/
 
+
+/**
+ * 49. 字母异位词分组 https://leetcode.cn/problems/group-anagrams/description/
+ * 给你一个字符串数组，请你将 字母异位词 组合在一起。可以按任意顺序返回结果列表。
+ * 字母异位词 是由重新排列源单词的所有字母得到的一个新单词。
+ * 输入: strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
+ * 输出: [["bat"],["nat","tan"],["ate","eat","tea"]]
+ */
+/**
+ * @param {string[]} strs
+ * @return {string[][]}
+ */
+ var groupAnagrams = function(strs) {
+    if(strs.length===1) return [strs]
+
+    const map = new Map()
+
+    strs.forEach(str => {
+        const key = str.split('').sort().join('')
+        let list = map.get(key) ? map.get(key) : new Array();
+        list.push(str);
+        map.set(key, list);
+    })
+
+    return Array.from(map.values())
+};
+
 /**
  * 128. 最长连续序列 https://leetcode.cn/problems/longest-consecutive-sequence/description/?favorite=2cktkvj
  * 给定一个未排序的整数数组 nums ，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
@@ -646,7 +677,7 @@ function dfs(board,word,x,y,index) {
     const set = new Set(nums)
     let maxCount = 0
     for(let num of nums) {
-        if(!set.has(num-1)) {
+        if(!set.has(num-1)) { // 优化算法，从不连续头开始
             let cur = num
             let count = 1
             while(set.has(cur+1)) {
@@ -663,7 +694,7 @@ function dfs(board,word,x,y,index) {
     const map = new Map()
     let maxCount = 0
     for(const num of nums) {
-        if(!map.has(num)) {
+        if(!map.has(num)) { // 去重
             const prelen = map.get(num-1) || 0
             const nextlen = map.get(num+1) || 0
             const totalLen = 1 + prelen + nextlen
@@ -826,6 +857,8 @@ MinStack.prototype.getMin = function() {
     return false
 };
 
+/*******************双指针 start******************************/
+
 /**
  * 283. 移动零 https://leetcode.cn/problems/move-zeroes/description/?favorite=2cktkvj
  * 给定一个数组 nums，编写一个函数将所有 0 移动到数组的末尾，同时保持非零元素的相对顺序。
@@ -844,6 +877,101 @@ MinStack.prototype.getMin = function() {
        如果 compareFn(a, b) 等于 0，a 和 b 的相对位置不变。
      */
 };
+
+var moveZeroes = function(nums) {
+    const n = nums.length
+    let l = 0, r = 0
+    while(r<n) {
+        if(nums[r]) {
+            [nums[l], nums[r]] = [nums[r], nums[l]]
+            l++
+        }
+        r++
+    }
+    return nums
+};
+
+// 暴力 nums.splice(i, 1)   nums.push(0)
+
+
+/**
+ * 11. 盛最多水的容器 https://leetcode.cn/problems/container-with-most-water/description/
+ */
+
+/**
+ * @param {number[]} height
+ * @return {number}
+ */
+ var maxArea = function(height) {
+    let ans = 0
+    for(let l=0, r=height.length-1; l<r;) {
+        const minHeight = height[l]>height[r] ? height[r--] : height[l++];
+        const area =  minHeight * (r-l+1)
+        ans = Math.max(ans, area)
+    }
+    return ans
+};
+
+/**
+ * 42. 接雨水 https://leetcode.cn/problems/trapping-rain-water/description/
+ * 给定 n 个非负整数表示每个宽度为 1 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
+ */
+
+/**
+ * @param {number[]} height
+ * @return {number}
+ */
+ var trap = function(height) {
+    if(height.length < 3) return 0
+    let leftMax = 0, rightMax = 0
+    let left = 0, right = height.length - 1
+    let sum = 0
+
+    while(left <= right) {
+        leftMax = Math.max(leftMax, height[left])
+        rightMax = Math.max(rightMax, height[right])
+
+        if(leftMax <= rightMax) {
+            sum += (leftMax-height[left])
+            left++
+        } else {
+            sum += (rightMax-height[right])
+            right--
+        }
+    }
+
+    return sum
+};
+
+/**
+ * 84. 柱状图中最大的矩形 https://leetcode.cn/problems/largest-rectangle-in-histogram/description/?favorite=2cktkvj
+ * 给定 n 个非负整数，用来表示柱状图中各个柱子的高度。每个柱子彼此相邻，且宽度为 1 。
+   求在该柱状图中，能够勾勒出来的矩形的最大面积。
+ */
+
+/**
+ * @param {number[]} heights
+ * @return {number}
+ */
+ var largestRectangleArea = function(heights) {
+    let area = 0
+    const stack = [0]
+    heights = [0, ...heights, 0]
+    for(let i=1; i<heights.length; i++) {
+        while(heights[i] < heights[stack[stack.length-1]]) {
+            const lastTopIndex = stack.pop()
+            area = Math.max(area,
+                heights[lastTopIndex] * (i - stack[stack.length-1] - 1)
+            )
+        }
+        stack.push(i)
+    }
+
+    return area
+};
+
+
+/*******************双指针 end******************************/
 
 /**
  * 347. 前 K 个高频元素 https://leetcode.cn/problems/top-k-frequent-elements/description/?favorite=2cktkvj
@@ -1007,4 +1135,336 @@ MinStack.prototype.getMin = function() {
         }
     }
     return count
+};
+
+/**
+ * 581. 最短无序连续子数组 https://leetcode.cn/problems/shortest-unsorted-continuous-subarray/description/?favorite=2cktkvj
+ * 给你一个整数数组 nums ，你需要找出一个 连续子数组 ，如果对这个子数组进行升序排序，那么整个数组都会变为升序排序。
+    请你找出符合题意的 最短 子数组，并输出它的长度。
+ */
+
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+ var findUnsortedSubarray = function(nums) { // 双指针，right：值比前面最大值小的 left: 值比后面最小值小的
+    const n = nums.length;
+    let min = Number.MAX_SAFE_INTEGER
+    let left = -1
+    let max = Number.MIN_SAFE_INTEGER
+    let right = -1
+
+    for(let i=0; i<nums.length; i++) {
+        if(max > nums[i]) {
+            right = i
+        } else {
+            max = nums[i]
+        }
+
+        if(min < nums[n-i-1]) {
+            left = n-i-1
+        } else {
+            min = nums[n-i-1]
+        }
+    }
+
+    return right === -1 ? 0 : right-left+1
+};
+
+/**
+ * 621. 任务调度器 https://leetcode.cn/problems/task-scheduler/description/?favorite=2cktkvj
+ * 给你一个用字符数组 tasks 表示的 CPU 需要执行的任务列表。其中每个字母表示一种不同种类的任务。任务可以以任意顺序执行，并且每个任务都可以在 1 个单位时间内执行完。
+ * 在任何一个单位时间，CPU 可以完成一个任务，或者处于待命状态。
+    然而，两个 相同种类 的任务之间必须有长度为整数 n 的冷却时间，因此至少有连续 n 个单位时间内 CPU 在执行不同的任务，或者在待命状态。
+    你需要计算完成所有任务所需要的 最短时间 。
+ */
+
+/**
+ * @param {character[]} tasks
+ * @param {number} n
+ * @return {number}
+ */
+ var leastInterval = function(tasks, n) {
+    let maxCount = 0
+    const map = {}
+    for(let i=0; i<tasks.length; i++) {
+        if(map[tasks[i]]) {
+            map[tasks[i]]++;
+        } else {
+            map[tasks[i]] = 1
+        }
+        maxCount = Math.max(maxCount, map[tasks[i]])
+    }
+
+    let ans = (maxCount-1) * (n+1)
+    const values = Object.values(map)
+    values.forEach(count => {
+        if(count === maxCount) {
+            ans++
+        }
+    })
+
+    return Math.max(ans, tasks.length)
+};
+
+/**
+ * 739. 每日温度 https://leetcode.cn/problems/daily-temperatures/description/?favorite=2cktkvj
+ * 给定一个整数数组 temperatures ，表示每天的温度，返回一个数组 answer ，其中 answer[i] 是指对于第 i 天，
+ * 下一个更高温度出现在几天后。如果气温在这之后都不会升高，请在该位置用 0 来代替。
+ */
+
+/**
+ * @param {number[]} temperatures
+ * @return {number[]}
+ */
+ var dailyTemperatures = function(temperatures) { // 暴力
+    const T = temperatures
+    const res = new Array(T.length).fill(0);
+    for (let i = 0; i < T.length; i++) {
+        for (let j = i + 1; j < T.length; j++) {
+            if (T[j] > T[i]) {
+                res[i] = j - i;
+                break;
+            }
+        }
+    }
+    return res;
+};
+
+var dailyTemperatures = function(temperatures) { // 单调栈
+    const n = temperatures.length
+    const ans = new Array(n).fill(0)
+
+    const stack = []
+
+    for(let i=n-1; i>=0; i--) {
+        while(stack.length && temperatures[stack[stack.length-1]] <= temperatures[i]) {
+            stack.pop()
+        }
+
+        if(stack.length) {
+            ans[i] = stack[stack.length-1] - i
+        }
+
+        stack.push(i)
+    }
+
+    return ans
+};
+
+/**
+ * 189. 轮转数组 https://leetcode.cn/problems/rotate-array/description/
+ * 给定一个整数数组 nums，将数组中的元素向右轮转 k 个位置，其中 k 是非负数。
+ * 输入: nums = [1,2,3,4,5,6,7], k = 3
+   输出: [5,6,7,1,2,3,4]
+ */
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {void} Do not return anything, modify nums in-place instead.
+ */
+ var rotate = function(nums, k) { // 翻转法
+    k %= nums.length;
+    reverse(nums, 0, nums.length - 1);
+    reverse(nums, 0, k - 1);
+    reverse(nums, k, nums.length - 1);
+    return nums;
+};
+let reverse = function(nums, start, end){
+    while(start < end){
+        [nums[start++], nums[end--]] = [nums[end], nums[start]];
+    }
+}
+
+var rotate = function(nums, k) { // 截断拼接法
+    const n = nums.length
+    k = k % n
+    const headArr = nums.splice(n-k, k)
+    nums.unshift(...headArr)
+};
+
+/**
+ * 73. 矩阵置零 https://leetcode.cn/problems/set-matrix-zeroes/description/
+ * 给定一个 m x n 的矩阵，如果一个元素为 0 ，则将其所在行和列的所有元素都设为 0 。请使用 原地 算法。
+ */
+
+/**
+ * @param {number[][]} matrix
+ * @return {void} Do not return anything, modify matrix in-place instead.
+ */
+ var setZeroes = function(matrix) { // 思路：用matrix的第一行，第一列记录是否为0标识位
+    let m = matrix.length, n=matrix[0].length;
+    let colZero = false
+
+    for(let i=0; i<m; i++) {
+        if(matrix[i][0]===0) {
+            colZero = true
+        } 
+
+        for(let j=1; j<n; j++) {
+            if(matrix[i][j]===0) {
+                matrix[i][0] = matrix[0][j] = 0
+            }
+        }
+    }
+
+    for(let i=m-1; i>=0; i--) {
+        for(let j=1; j<n; j++) {
+            if(matrix[0][j]===0 || matrix[i][0]===0) {
+                matrix[i][j]=0
+            }
+        }
+        if(colZero) {
+            matrix[i][0] = 0
+        }
+    }
+};
+
+/**
+ * 54. 螺旋矩阵 https://leetcode.cn/problems/spiral-matrix/description/
+ * 给你一个 m 行 n 列的矩阵 matrix ，请按照 顺时针螺旋顺序 ，返回矩阵中的所有元素。
+ */
+
+/**
+ * @param {number[][]} matrix
+ * @return {number[]}
+ */
+ var spiralOrder = function(matrix) {
+    if(!matrix.length || !matrix[0].length) return []
+    const m=matrix.length, n=matrix[0].length
+    let l=0, r=n-1, top=0, bottom=m-1
+    const result=[]
+    while(l<=r && top<=bottom) {
+        for(let i=l; i<=r; i++) {
+            result.push(matrix[top][i])
+        }
+        for(let j=top+1; j<=bottom; j++) {
+            result.push(matrix[j][r])
+        }
+        if(l<r && top<bottom) {
+            for(let i=r-1; i>l; i--) {
+                result.push(matrix[bottom][i])
+            }
+            for(let j=bottom; j>top; j--) {
+                result.push(matrix[j][l])
+            }
+        }
+        [l, r, top, bottom] = [l+1, r-1, top+1, bottom-1]
+    }
+    return result
+};
+
+/**
+ * 239. 滑动窗口最大值 https://leetcode.cn/problems/sliding-window-maximum/description/
+ * 给你一个整数数组 nums，有一个大小为 k 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的 k 个数字。滑动窗口每次只向右移动一位。
+   返回 滑动窗口中的最大值 。
+   输入：nums = [1,3,-1,-3,5,3,6,7], k = 3
+   输出：[3,3,5,5,6,7]
+ */
+
+/**
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number[]}
+ */
+var maxSlidingWindow = function(nums, k) { // 单调队列
+    const ans = []
+    const q = []
+    for(let i=0; i<nums.length; i++) {
+        while(q.length && nums[q[q.length-1]]<=nums[i]) {
+            q.pop()
+        }
+        q.push(i)
+        if(i-q[0]>=k) {
+            q.shift()
+        }
+        if(i>=k-1) {
+            ans.push(nums[q[0]])
+        }
+    }
+    return ans
+};
+
+/**
+ * 295. 数据流的中位数 https://leetcode.cn/problems/find-median-from-data-stream/description/
+    中位数是有序整数列表中的中间值。
+    例如 arr = [2,3,4] 的中位数是 3 。
+    例如 arr = [2,3] 的中位数是 (2 + 3) / 2 = 2.5 。
+
+    实现 MedianFinder 类:
+
+    MedianFinder() 初始化 MedianFinder 对象。
+
+    void addNum(int num) 将数据流中的整数 num 添加到数据结构中。
+
+    double findMedian() 返回到目前为止所有元素的中位数。与实际答案相差 10-5 以内的答案将被接受。
+ */
+
+var MedianFinder = function() {
+    this.data = []
+};
+
+/** 
+ * @param {number} num
+ * @return {void}
+ */
+MedianFinder.prototype.addNum = function(num) {
+    const n = this.data.length
+    if(!n) {
+        this.data.push(num)
+        return
+    }
+
+    let l=0, r=n-1
+    while(l<=r) {
+        const mid = l + Math.floor((r-l)/2)
+        if(this.data[mid] > num) {
+            r = mid - 1
+        } else {
+            l = mid + 1
+        }
+    }
+    this.data.splice(r+1, 0, num)
+};
+
+/**
+ * @return {number}
+ */
+MedianFinder.prototype.findMedian = function() {
+    const n = this.data.length
+    if(!n) return null
+    if(n%2) {
+        return this.data[Math.floor(n/2)]
+    } else {
+        const midleft = Math.floor((n-1)/2)
+        return (this.data[midleft] + this.data[midleft+1])/2
+    }
+};
+
+/**
+ * 41. 缺失的第一个正数 https://leetcode.cn/problems/first-missing-positive/description/
+ * 给你一个未排序的整数数组 nums ，请你找出其中没有出现的最小的正整数。
+ * 输入：nums = [3,4,-1,1]
+   输出：2
+ */
+
+/**
+ * @param {number[]} nums
+ * @return {number}
+ */
+ var firstMissingPositive = function(nums) {
+    const n = nums.length
+    for(let i=0; i<n; i++) {
+        while(nums[i]>=1 && nums[i]<=n && nums[nums[i]-1]!=nums[i]) {
+            const temp = nums[nums[i]-1]
+            nums[nums[i]-1] = nums[i]
+            nums[i] = temp
+        }
+    }
+    for(let i=0; i<n; i++) {
+        if(nums[i]!=i+1) {
+            return i+1
+        }
+    }
+    return n+1
 };

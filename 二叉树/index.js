@@ -1,7 +1,8 @@
 /**
+ * 解题思路：遍历(前中后序遍历，层序遍历)，将问题在一个小二叉树上分析
  * 二叉树：分为两类：普通和二叉搜索树(left<mid<right)
- * 经典题型：深度遍历dfs(deep first search) 和广度遍历
- * 本质：上述便利和递归的结合
+ * 经典题型：深度遍历dfs(deep first search) 和广度遍历bfs(breadth first search)
+ * 本质：上述遍历和递归的结合
  * 注意：
  *     叶子节点：必须判断左右子节点都没有
  */
@@ -113,7 +114,7 @@ var isSymmetric = function(root) {
 var minDepth = function(root) {
     if(!root) {
         return 0
-    } else if(!root.right && !root.left) {
+    } else if(!root.right && !root.left) { // 为了防止纯单边二叉树 算少
         return 1
     } else if(!root.right) {
         return 1 + minDepth(root.left)
@@ -516,6 +517,50 @@ function rootSum(node, target) {
     return count
 };
 
+/**
+ * 199.二叉树的右视图 https://leetcode.cn/problems/binary-tree-right-side-view/description/
+ * 给定一个二叉树的 根节点 root，想象自己站在它的右侧，按照从顶部到底部的顺序，返回从右侧所能看到的节点值。
+ */
+
+/**
+ * @param {TreeNode} root
+ * @return {number[]}
+ */
+ var rightSideView = function(root) {
+    if(!root) return []
+    let stack = []
+    function dfs(node, index, stack) {
+        if(!node) return
+        if(stack.length === index) {
+            stack.push(node.val)
+        }
+        dfs(node.right, index+1, stack)
+        dfs(node.left, index+1, stack)
+    }
+    dfs(root, 0, stack)
+    return stack
+};
+
+/**
+ * 105. 从前序与中序遍历序列构造二叉树 https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/description/
+ * 给定两个整数数组 preorder 和 inorder ，其中 preorder 是二叉树的先序遍历， inorder 是同一棵树的中序遍历，请构造二叉树并返回其根节点。
+ */
+
+/**
+ * @param {number[]} preorder
+ * @param {number[]} inorder
+ * @return {TreeNode}
+ */
+ var buildTree = function(preorder, inorder) {
+    if(!preorder.length) return null
+    const val = preorder[0]
+    const root = new TreeNode(val)
+    const mid = inorder.indexOf(val)
+    root.left = buildTree(preorder.slice(1,mid+1), inorder.slice(0,mid))
+    root.right = buildTree(preorder.slice(mid+1), inorder.slice(mid+1))
+    return root
+};
+
 //************************************二叉搜索树 start********************************
 
 /**
@@ -553,6 +598,7 @@ function rootSum(node, target) {
 /**
  * @param {TreeNode} root
  * @return {boolean}
+ * 不仅左右子节点要满足当前节点，还要满足父节点
  */
  var isValidBST = function(root) {
     function dfs(node, low, high) {
@@ -754,11 +800,11 @@ var insertIntoBST = function(root, val) {
         if(!root.left) return root.right
         if(!root.right) return root.left
 
-        let target = root.right
+        let target = root.right // 取root.right上最小的点作为新的target,并删除root.right的最小点
         while(target.left) {
             target = target.left
         }
-        root.right = deleteNode(root.right, target.val);
+        root.right = deleteNode(root.right, target.val); 
         target.left = root.left;
         target.right = root.right;
 
@@ -848,6 +894,33 @@ var insertIntoBST = function(root, val) {
     dfs(root, p, q)
 
     return ans
+};
+
+/**
+ * 230. 二叉搜索树中第K小的元素 https://leetcode.cn/problems/kth-smallest-element-in-a-bst/description/
+ * 给定一个二叉搜索树的根节点 root ，和一个整数 k ，请你设计一个算法查找其中第 k 个最小元素（从 1 开始计数）。
+ */
+
+/**
+ * @param {TreeNode} root
+ * @param {number} k
+ * @return {number}
+ */
+ var kthSmallest = function(root, k) {
+    const stack = []
+    while(root || stack.length) {
+        while(root) {
+            stack.push(root)
+            root = root.left
+        }
+        root = stack.pop();
+        --k;
+        if(k==0) {
+            break
+        }
+        root = root.right
+    }
+    return root.val
 };
 
 //************************************二叉搜索树 end********************************

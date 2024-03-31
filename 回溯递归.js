@@ -1,4 +1,9 @@
 /**
+ * 题型分类：
+ * https://leetcode.cn/problems/eight-queens-lcci/solutions/487917/ba-huang-hou-hui-su-suan-fa-jing-dian-ti-mu-xiang-/
+ */
+
+/**
  * 494. 目标和 https://leetcode.cn/problems/target-sum/description/?favorite=2cktkvj
  * 给你一个整数数组 nums 和一个整数 target 。
     向数组中的每个整数前添加 '+' 或 '-' ，然后串联起所有整数，可以构造一个 表达式 ：
@@ -30,4 +35,3 @@
 
     return count
 };
-
